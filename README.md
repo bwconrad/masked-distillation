@@ -26,6 +26,7 @@ python train.py --accelerator gpu --devices 1 --precision 16  --data.root path/t
 - `--model.teacher_name` can be one of:
     - `clip_vit_base_patch32`, `clip_vit_base_patch16`, `clip_vit_large_patch14`
     - `openclip_vit_base_patch32`, `openclip_vit_large_patch14`, `openclip_vit_giant_patch14`, `openclip_vit_huge_patch14`
+    - `pixel` (predict masked patches' pixel values)
 
 - `--model.head` can be one of `fc`, `vit`.
 

@@ -39,7 +39,7 @@ class ClipModel(nn.Module):
         x = self.net.transformer(x)  # type:ignore
         x = x.permute(1, 0, 2)  # LND -> NLD
 
-        return x
+        return x[:, 1:, :]  # Drop cls token
 
     def interpolate_pos_encoding(self, x: torch.Tensor, w: int, h: int) -> torch.Tensor:
         """Interpolate position embeddings when input is a different spatial resolution
@@ -96,12 +96,36 @@ class ClipModel(nn.Module):
 class TimmModel(nn.Module):
     def __init__(self, model: str, **kwargs) -> None:
         super().__init__()
+        kwargs.pop("student_patch_size")
         self.net = timm.create_model(model, pretrained=True, **kwargs)
         self.patch_size = self.net.patch_embed.patch_size[0]
         self.embed_dim = self.net.embed_dim
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.net.forward_features(x)
+        return self.net.forward_features(x)[:, 1:, :]  # Drop cls token
+
+
+class PixelModel(nn.Module):
+    def __init__(self, student_patch_size: int, **kwargs) -> None:
+        super().__init__()
+        self.patch_size = student_patch_size
+        self.embed_dim = self.patch_size**2 * 3  # Number of pixels per patch
+
+    def patchify(self, x) -> torch.Tensor:
+        """Rearrange image into patches
+        (b, 3, h, w) -> (b, n, patch_size^2 * 3)
+        """
+        assert x.shape[2] == x.shape[3] and x.shape[2] % self.patch_size == 0
+
+        return rearrange(
+            x,
+            "b c (h p1) (w p2) -> b (h w) (p1 p2 c)",
+            p1=self.patch_size,
+            p2=self.patch_size,
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.patchify(x)
 
 
 def build_teacher(
@@ -115,7 +139,11 @@ def build_teacher(
         )
 
     # Calculate the adjusted image size
-    patch_size = int(model[-2:])  # Infer patch size from model string
+    if model != "pixel":
+        patch_size = int(model[-2:])  # Infer patch size from model string
+    else:
+        # With pixel teacher targets just use the same patch size as the student
+        patch_size = kwargs["student_patch_size"]
     kwargs["img_size"] = int(size_ratio * patch_size)
 
     model = model_fn(**kwargs)
@@ -144,4 +172,5 @@ MODEL_DICT = {
     "openclip_vit_huge_patch14": partial(
         TimmModel, "vit_huge_patch14_224_clip_laion2b"
     ),
+    "pixel": PixelModel,
 }

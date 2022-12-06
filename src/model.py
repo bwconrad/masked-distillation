@@ -112,6 +112,7 @@ class MaskDistillModel(pl.LightningModule):
         self.teacher, self.teacher_img_size = build_teacher(
             self.teacher_model,
             size_ratio=self.img_size / self.student.patch_size,  # type:ignore
+            student_patch_size=self.student.patch_size,
         )
         self.head = build_head(
             self.head_model,
@@ -150,9 +151,7 @@ class MaskDistillModel(pl.LightningModule):
             target = (target - mean) / (var + 1.0e-6) ** 0.5
 
         # Calculate loss
-        loss = self.loss_fn(
-            pred[:, 1:, :], target[:, 1:, :], mask.flatten(1)  # Ignore cls tokens
-        )
+        loss = self.loss_fn(pred, target, mask.flatten(1))
 
         # Log
         self.log(f"{mode}_loss", loss)

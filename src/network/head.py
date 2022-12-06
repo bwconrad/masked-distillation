@@ -105,7 +105,7 @@ class VitDecoder(nn.Module):
         # Apply prediction head
         x = self.head(self.norm(x))
 
-        return x
+        return x[:, 1:, :]  # Drop cls token
 
 
 class Linear(nn.Module):
@@ -114,7 +114,7 @@ class Linear(nn.Module):
         self.fc = nn.Linear(in_dim, out_dim)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.fc(x)
+        return self.fc(x)[:, 1:, :]  # Drop cls token
 
 
 def build_head(model: str, **kwargs) -> nn.Module:
