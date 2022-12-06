@@ -1,6 +1,6 @@
 # Masked Distillation Pretraining
 
-PyTorch reimplementation of MaskDistill from ["A Unified View of Masked Image Modeling"](https://arxiv.org/abs/2210.10615).
+PyTorch reimplementation of MaskDistill from ["A Unified View of Masked Image Modeling"](https://arxiv.org/abs/2210.10615). This repo provides many different masked distillation pretraining configurations explored in the original work.
 
 
 <p align="center">
