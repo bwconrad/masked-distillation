@@ -5,5 +5,5 @@ pytorch_lightning[extra]==1.8.1
 timm==0.6.11
 torch==1.13.0
 torchvision==0.14.0
--e git+https://github.com/openai/CLIP.git
+-e git+https://github.com/openai/CLIP.git@d50d76daa670286dd6cacf3bcd80b5e4823fc8e1#egg=clip
 
