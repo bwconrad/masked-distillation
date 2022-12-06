@@ -154,6 +154,7 @@ class ImageMaskDataset(data.Dataset):
         self.transforms = transforms
         self.mask_generator = mask_generator
 
+        assert len(self.paths) > 0, f"No files found in data root directory '{root}'"
         print(f"Loaded {len(self.paths)} images from {root}")
 
     def __getitem__(self, index):
