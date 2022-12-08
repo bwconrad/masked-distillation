@@ -48,7 +48,8 @@ class MaskDistillModel(pl.LightningModule):
         Args:
             img_size: Size of input image
             student_model: Name of student model. One of [vit_tiny_patch16, vit_small_patch16,
-                vit_base_patch16, vit_large_patch16, vit_huge_patch14]
+                vit_base_patch16, vit_large_patch16, vit_huge_patch14, swin_tiny_patch4,
+                swin_small_patch4, swin_base_patch4, swin_large_patch4]
             use_abs_pos_emb: Add learnable position embeddings to student
             use_rel_pos_bias: Add relative position biases to student (only for ViT student)
             layer_scale_init_val: Layer scale initialization value of student (None uses model default) (only for ViT student)
