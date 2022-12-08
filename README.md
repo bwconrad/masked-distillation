@@ -22,6 +22,7 @@ python train.py --accelerator gpu --devices 1 --precision 16  --data.root path/t
 - Run `python train.py --help` for descriptions of all options.
 - `--model.student_name` can be one of: 
     - `vit_tiny_patch16`, `vit_small_patch16`, `vit_base_patch16`, `vit_large_patch16`, `vit_huge_patch14`
+    - `swin_tiny_patch4`, `swin_small_patch4`, `swin_base_patch4`, `swin_large_patch4`
 
 - `--model.teacher_name` can be one of:
     - `clip_vit_base_patch32`, `clip_vit_base_patch16`, `clip_vit_large_patch14`
