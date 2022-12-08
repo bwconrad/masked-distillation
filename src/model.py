@@ -24,6 +24,7 @@ class MaskDistillModel(pl.LightningModule):
         use_rel_pos_bias: bool = True,
         layer_scale_init_val: Optional[float] = None,
         drop_path_rate: Optional[float] = None,
+        window_size: int = 7,
         head_model: str = "fc",
         head_embed_dim: int = 512,
         head_depth: int = 8,
@@ -49,9 +50,10 @@ class MaskDistillModel(pl.LightningModule):
             student_model: Name of student model. One of [vit_tiny_patch16, vit_small_patch16,
                 vit_base_patch16, vit_large_patch16, vit_huge_patch14]
             use_abs_pos_emb: Add learnable position embeddings to student
-            use_rel_pos_bias: Add relative position biases to student
-            layer_scale_init_val: Layer scale initialization value of student (None uses model default)
+            use_rel_pos_bias: Add relative position biases to student (only for ViT student)
+            layer_scale_init_val: Layer scale initialization value of student (None uses model default) (only for ViT student)
             drop_path_rate: Drop path rate of student (None uses model default)
+            window_size: Swin window size
             teacher_model: Name of teacher model. One of [clip_vit_base_patch32, clip_vit_base_patch16,
                 clip_vit_large_patch14, openclip_vit_base_patch32, openclip_vit_large_patch14,
                 openclip_vit_giant_patch14, openclip_vit_huge_patch14]
@@ -81,6 +83,7 @@ class MaskDistillModel(pl.LightningModule):
         self.use_rel_pos_bias = use_rel_pos_bias
         self.layer_scale = layer_scale_init_val
         self.drop_path_rate = drop_path_rate
+        self.window_size = window_size
         self.teacher_model = teacher_model
         self.head_model = head_model
         self.head_embed_dim = head_embed_dim
@@ -108,6 +111,7 @@ class MaskDistillModel(pl.LightningModule):
             use_rel_pos_bias=self.use_rel_pos_bias,
             init_values=self.layer_scale,
             drop_path_rate=self.drop_path_rate,
+            window_size=self.window_size,
         )
         self.teacher, self.teacher_img_size = build_teacher(
             self.teacher_model,
@@ -123,6 +127,7 @@ class MaskDistillModel(pl.LightningModule):
             depth=self.head_depth,
             num_heads=self.head_num_heads,
             use_fixed_sin_cos_pos_embed=self.head_fixed_pos_embed,
+            drop_cls_token=self.student.has_cls_token,
         )
 
         # Define loss function

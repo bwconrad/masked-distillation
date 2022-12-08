@@ -20,10 +20,12 @@ class VitDecoder(nn.Module):
         norm_layer: nn.Module = partial(nn.LayerNorm, eps=1e-6),  # type:ignore
         act_layer: nn.Module = nn.GELU,  # type:ignore
         use_fixed_sin_cos_pos_embed: bool = True,
+        drop_cls_token: bool = True,
     ) -> None:
         super().__init__()
         self.num_patches = num_patches
         self.embed_dim = embed_dim
+        self.drop_cls_token = drop_cls_token
 
         # Projection from encoder to decoder dim
         self.embed = nn.Linear(in_dim, self.embed_dim, bias=True)
@@ -105,16 +107,26 @@ class VitDecoder(nn.Module):
         # Apply prediction head
         x = self.head(self.norm(x))
 
-        return x[:, 1:, :]  # Drop cls token
+        if self.drop_cls_token:
+            return x[:, 1:, :]  # Drop cls token
+        else:
+            return x
 
 
 class Linear(nn.Module):
-    def __init__(self, in_dim: int, out_dim: int, **kwargs) -> None:
+    def __init__(
+        self, in_dim: int, out_dim: int, drop_cls_token: bool = True, **kwargs
+    ) -> None:
         super().__init__()
         self.fc = nn.Linear(in_dim, out_dim)
+        self.drop_cls_token = drop_cls_token
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.fc(x)[:, 1:, :]  # Drop cls token
+        x = self.fc(x)
+        if self.drop_cls_token:
+            return x[:, 1:, :]  # Drop cls token
+        else:
+            return x
 
 
 def build_head(model: str, **kwargs) -> nn.Module:
