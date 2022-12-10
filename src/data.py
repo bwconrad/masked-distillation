@@ -25,6 +25,7 @@ class DataModule(pl.LightningDataModule):
         mask_max_block_patches: Optional[int] = None,
         min_scale: float = 0.08,
         max_scale: float = 1.0,
+        horizontal_flip_prob: float = 0.5,
         brightness: float = 0.4,
         contrast: float = 0.4,
         saturation: float = 0.4,
@@ -48,11 +49,12 @@ class DataModule(pl.LightningDataModule):
                 (when mask_min_block_patches = mask_max_block_patches = 1 then it is random masking)
             min_scale: Minimum random crop scale ratio
             max_scale: Maximum random crop scale ratio
-            mean: Normalization channel means
+            horizontal_flip_prob: Probability of applying horizontal flip
             brightness: Brightness jitter intensity
-            contrast: Contast jitter intensity
+            contrast: Contrast jitter intensity
             saturation: Saturation jitter intensity
             hue: Hue jitter intensity
+            mean: Normalization channel means
             std: Normalization channel standard deviations
             num_val_samples: Number of validation samples
             batch_size: Number of batch samples
@@ -68,6 +70,7 @@ class DataModule(pl.LightningDataModule):
         self.mask_max_block_patches = mask_max_block_patches
         self.min_scale = min_scale
         self.max_scale = max_scale
+        self.horizontal_flip_prob = horizontal_flip_prob
         self.brightness = brightness
         self.contrast = contrast
         self.saturation = saturation
@@ -87,7 +90,7 @@ class DataModule(pl.LightningDataModule):
                     hue=self.hue,  # type:ignore
                 ),
                 RandomResizedCrop(self.size, scale=(self.min_scale, self.max_scale)),
-                RandomHorizontalFlip(),
+                RandomHorizontalFlip(self.horizontal_flip_prob),
                 ToTensor(),
                 Normalize(mean=self.mean, std=self.std),
             ]
